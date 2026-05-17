@@ -1,5 +1,6 @@
 package com.arsh.devsync.controller;
 
+import com.arsh.devsync.dto.AuthResponse;
 import com.arsh.devsync.dto.LoginRequest;
 import com.arsh.devsync.dto.SignupRequest;
 import com.arsh.devsync.entity.User;
@@ -23,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@Valid @RequestBody LoginRequest request) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
     }
 }

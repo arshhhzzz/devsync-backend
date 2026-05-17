@@ -1,6 +1,7 @@
 package com.arsh.devsync.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class CreateTaskRequest {
 
@@ -12,7 +13,7 @@ public class CreateTaskRequest {
     @NotBlank(message = "status is required")
     private String status;
 
-    @NotBlank(message = "user ID is required")
+    @NotNull(message = "user ID is required")
     private Long userId;
 
     public String getTitle() {

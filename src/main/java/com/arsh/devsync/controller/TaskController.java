@@ -6,6 +6,7 @@ import com.arsh.devsync.entity.Task;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,18 +30,27 @@ public class TaskController {
         return taskService.getAllTasks();
     }
 
-    @GetMapping("/{id}")
-    public Task getTaaskById(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    @GetMapping("/my")
+    public List<Task> getMyTasks(Authentication authentication) {
+        String email = authentication.getName();
+        return taskService.getMyTasks(email);
+    }
+
+    @GetMapping("/{id:\\d+}")
+    public Task getTaskById(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        return taskService.getTaskById(id, email);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTaskById(@PathVariable Long id) {
-        taskService.deleteTaskById(id);
+    public void deleteTaskById(@PathVariable Long id, Authentication authentication) {
+        String email = authentication.getName();
+        taskService.deleteTaskById(id,  email);
     }
 
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @Valid @RequestBody UpdateTaskRequest request) {
-        return taskService.updateTask(id, request);
+    public Task updateTask(@PathVariable Long id, @Valid @RequestBody UpdateTaskRequest request,  Authentication authentication) {
+        String email = authentication.getName();
+        return taskService.updateTask(id, request, email);
     }
 }
