@@ -1,6 +1,7 @@
 package com.arsh.devsync.controller;
 
 import com.arsh.devsync.dto.CreateTaskRequest;
+import com.arsh.devsync.dto.UpdateTaskRequest;
 import com.arsh.devsync.entity.Task;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.service.TaskService;
@@ -31,5 +32,15 @@ public class TaskController {
     @GetMapping("/{id}")
     public Task getTaaskById(@PathVariable Long id) {
         return taskService.getTaskById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTaskById(@PathVariable Long id) {
+        taskService.deleteTaskById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Task updateTask(@PathVariable Long id, @Valid @RequestBody UpdateTaskRequest request) {
+        return taskService.updateTask(id, request);
     }
 }

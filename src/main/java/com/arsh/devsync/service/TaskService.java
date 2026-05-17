@@ -1,6 +1,7 @@
 package com.arsh.devsync.service;
 
 import com.arsh.devsync.dto.CreateTaskRequest;
+import com.arsh.devsync.dto.UpdateTaskRequest;
 import com.arsh.devsync.entity.Task;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.exception.ResourceNotFoundException;
@@ -39,5 +40,19 @@ public class TaskService {
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
+    }
+
+    public void deleteTaskById(Long id) {
+        Task task = getTaskById(id);
+        taskRepository.delete(task);
+    }
+
+    public Task updateTask(Long id, UpdateTaskRequest request) {
+        Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setStatus(request.getStatus());
+
+        return taskRepository.save(task);
     }
 }

@@ -1,5 +1,6 @@
 package com.arsh.devsync.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public class User {
     private String name;
     private String email;
     private String role;
+    @JsonIgnore
+    private String password;
 
     @OneToMany(mappedBy = "user")
     private List<Task> tasks;
@@ -22,11 +25,20 @@ public class User {
     public User() {
     }
 
+    public User(String name, String email, String role,  String password) {
+        this.name = name;
+        this.email = email;
+        this.role = role;
+        this.password = password;
+    }
+
     public User(String name, String email, String role) {
         this.name = name;
         this.email = email;
         this.role = role;
     }
+
+
 
     public Long getId() {
         return id;
@@ -55,4 +67,9 @@ public class User {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {}
 }
