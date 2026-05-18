@@ -1,6 +1,7 @@
 package com.arsh.devsync.controller;
 
 import com.arsh.devsync.dto.CreateUserRequest;
+import com.arsh.devsync.dto.UserResponse;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.service.UserService;
 import jakarta.validation.Valid;
@@ -19,17 +20,20 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody CreateUserRequest request) {
-        return userService.createUser(request);
+    public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
+        return new UserResponse(userService.createUser(request));
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserResponse> getAllUsers() {
+        return userService.getAllUsers()
+                .stream()
+                .map(UserResponse::new)
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public UserResponse getUserById(@PathVariable Long id) {
+        return new UserResponse(userService.getUserById(id));
     }
 }

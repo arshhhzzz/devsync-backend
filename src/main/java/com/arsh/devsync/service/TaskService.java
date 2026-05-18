@@ -1,12 +1,17 @@
 package com.arsh.devsync.service;
 
 import com.arsh.devsync.dto.CreateTaskRequest;
+import com.arsh.devsync.dto.PagedResponse;
+import com.arsh.devsync.dto.TaskResponse;
 import com.arsh.devsync.dto.UpdateTaskRequest;
 import com.arsh.devsync.entity.Task;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.repository.TaskRepository;
 import com.arsh.devsync.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -70,5 +75,39 @@ public class TaskService {
     public List<Task> getMyTasks(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return taskRepository.findByUser(user);
+    }
+
+    public PagedResponse<TaskResponse> getMyTasksPaginated(
+            String email,
+            int page,
+            int size,
+            String status
+    ) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Task> taskPage;
+
+        if (status != null && !status.isBlank()) {
+            taskPage = taskRepository.findByUserAndStatus(user, status, pageable);
+        } else {
+            taskPage = taskRepository.findByUser(user, pageable);
+        }
+
+        List<TaskResponse> content = taskPage.getContent()
+                .stream()
+                .map(TaskResponse::new)
+                .toList();
+
+        return new PagedResponse<>(
+                content,
+                taskPage.getNumber(),
+                taskPage.getSize(),
+                taskPage.getTotalElements(),
+                taskPage.getTotalPages(),
+                taskPage.isLast()
+        );
     }
 }

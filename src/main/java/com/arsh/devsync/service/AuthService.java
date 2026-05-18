@@ -3,6 +3,7 @@ package com.arsh.devsync.service;
 import com.arsh.devsync.dto.AuthResponse;
 import com.arsh.devsync.dto.LoginRequest;
 import com.arsh.devsync.dto.SignupRequest;
+import com.arsh.devsync.dto.UserResponse;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.repository.UserRepository;
 import com.arsh.devsync.security.JwtService;
