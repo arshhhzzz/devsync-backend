@@ -18,6 +18,7 @@ public class TaskResponse {
     private String projectName;
     private TaskPriority priority;
     private LocalDate dueDate;
+    private Long assigneeId;
 
     public TaskResponse(Task task) {
         this.id = task.getId();
@@ -26,6 +27,7 @@ public class TaskResponse {
         this.status = task.getStatus();
         this.priority = task.getPriority();
         this.dueDate = task.getDueDate();
+        this.assigneeId = task.getAssignee().getId();
 
         if (task.getUser() != null) {
             this.userId = task.getUser().getId();

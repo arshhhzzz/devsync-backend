@@ -22,6 +22,8 @@ public class CreateTaskRequest {
 
     private LocalDate dueDate;
 
+    private Long assigneeId;
+
     public String getTitle() {
         return title;
     }
@@ -40,5 +42,9 @@ public class CreateTaskRequest {
 
     public LocalDate getDueDate() {
         return dueDate;
+    }
+
+    public Long getAssigneeId() {
+        return assigneeId;
     }
 }

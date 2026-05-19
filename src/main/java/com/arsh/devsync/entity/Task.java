@@ -29,6 +29,10 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assignee_id")
+    private User assignee;
+
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
@@ -91,5 +95,12 @@ public class Task {
 
     public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public User getAssignee() {
+        return assignee;
+    }
+    public void setAssignee(User assignee) {
+        this.assignee = assignee;
     }
 }

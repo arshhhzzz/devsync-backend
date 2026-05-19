@@ -99,4 +99,12 @@ public class TaskController {
                 status
         );
     }
+
+    @GetMapping("/tasks/assigned-to-me")
+    public List<TaskResponse> getTasksAssignedToMe(Authentication authentication) {
+        return taskService.getTasksAssignedToMe(authentication.getName())
+                .stream()
+                .map(TaskResponse::new)
+                .toList();
+    }
 }

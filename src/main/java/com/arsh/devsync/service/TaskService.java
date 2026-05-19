@@ -43,11 +43,12 @@ public class TaskService {
 
         WorkspaceMembership membership = getMembershipForProject(project, user);
 
-        if (membership.getRole() != WorkspaceRole.OWNER &&
-                membership.getRole() != WorkspaceRole.ADMIN &&
-                membership.getRole() != WorkspaceRole.MEMBER) {
-            throw new RuntimeException("You are not allowed to create tasks in this project");
-        }
+        User assignee = resolveAssignee(
+                request.getAssigneeId(),
+                project,
+                user,
+                membership
+        );
 
         Task task = new Task(
                 request.getTitle(),
@@ -59,6 +60,7 @@ public class TaskService {
 
         task.setUser(user);
         task.setProject(project);
+        task.setAssignee(assignee);
 
         return taskRepository.save(task);
     }
@@ -95,13 +97,26 @@ public class TaskService {
             throw new RuntimeException("You are not allowed to update this task");
         }
 
+        User assignee = resolveAssignee(
+                request.getAssigneeId(),
+                task.getProject(),
+                user,
+                membership
+        );
+
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
         task.setStatus(request.getStatus());
         task.setPriority(request.getPriority());
         task.setDueDate(request.getDueDate());
+        task.setAssignee(assignee);
 
         return taskRepository.save(task);
+    }
+
+    public List<Task> getTasksAssignedToMe(String email) {
+        User user = getUserByEmail(email);
+        return taskRepository.findByAssignee(user);
     }
 
     public void deleteTaskById(Long id, String email) {
@@ -184,4 +199,27 @@ public class TaskService {
         return membershipRepository.findByWorkspaceAndUser(project.getWorkspace(), user)
                 .orElseThrow(() -> new RuntimeException("You are not a member of this workspace"));
     }
+
+    private User resolveAssignee(Long assigneeId, Project project, User currentUser, WorkspaceMembership membership) {
+        if (assigneeId == null) {
+            return null;
+        }
+
+        User assignee = userRepository.findById(assigneeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignee not found with id: " + assigneeId));
+
+        membershipRepository.findByWorkspaceAndUser(project.getWorkspace(), assignee)
+                .orElseThrow(() -> new RuntimeException("Assignee is not a member of this workspace"));
+
+        boolean isAdminOrOwner = membership.getRole() == WorkspaceRole.OWNER ||
+                membership.getRole() == WorkspaceRole.ADMIN;
+
+        if (!isAdminOrOwner && !assignee.getId().equals(currentUser.getId())) {
+            throw new RuntimeException("MEMBER can only assign task to themselves");
+        }
+
+        return assignee;
+    }
+
+
 }
