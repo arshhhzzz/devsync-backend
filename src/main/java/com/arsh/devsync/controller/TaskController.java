@@ -4,8 +4,6 @@ import com.arsh.devsync.dto.CreateTaskRequest;
 import com.arsh.devsync.dto.PagedResponse;
 import com.arsh.devsync.dto.TaskResponse;
 import com.arsh.devsync.dto.UpdateTaskRequest;
-import com.arsh.devsync.entity.Task;
-import com.arsh.devsync.entity.User;
 import com.arsh.devsync.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +22,7 @@ public class TaskController {
         this.taskService = taskService;
     }
     @PostMapping
-    public TaskResponse CreateTask(@Valid @RequestBody CreateTaskRequest request, Authentication authentication) {
+    public TaskResponse createTask(@Valid @RequestBody CreateTaskRequest request, Authentication authentication) {
         return new TaskResponse(taskService.createTask(request, authentication.getName()));
     }
 
@@ -51,13 +49,13 @@ public class TaskController {
         return new TaskResponse(taskService.getTaskById(id, email));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     public void deleteTaskById(@PathVariable Long id, Authentication authentication) {
         String email = authentication.getName();
         taskService.deleteTaskById(id,  email);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     public TaskResponse updateTask(@PathVariable Long id, @Valid @RequestBody UpdateTaskRequest request,  Authentication authentication) {
         String email = authentication.getName();
         return new TaskResponse(taskService.updateTask(id, request, email));

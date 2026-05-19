@@ -32,7 +32,7 @@ public class AuthService {
         User user = new User(
                 signupRequest.getName(),
                 signupRequest.getEmail(),
-                "User",
+                "USER",
                 hashedPassword
         );
         return userRepository.save(user);
