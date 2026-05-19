@@ -4,9 +4,11 @@ import com.arsh.devsync.dto.CreateTaskRequest;
 import com.arsh.devsync.dto.PagedResponse;
 import com.arsh.devsync.dto.TaskResponse;
 import com.arsh.devsync.dto.UpdateTaskRequest;
+import com.arsh.devsync.entity.Project;
 import com.arsh.devsync.entity.Task;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.exception.ResourceNotFoundException;
+import com.arsh.devsync.repository.ProjectRepository;
 import com.arsh.devsync.repository.TaskRepository;
 import com.arsh.devsync.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -20,10 +22,12 @@ import java.util.List;
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, ProjectRepository projectRepository) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
     }
 
     private Task getTaskIfOwner(Long taskId, String email) {
@@ -37,16 +41,20 @@ public class TaskService {
         return task;
     }
 
-    public Task createTask(CreateTaskRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
-        System.out.println(user);
+    public Task createTask(CreateTaskRequest request, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Project project = projectRepository.findById(request.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
         Task task = new Task(
                 request.getTitle(),
                 request.getDescription(),
                 request.getStatus()
         );
         task.setUser(user);
+        task.setProject(project);
         return taskRepository.save(task);
     }
 

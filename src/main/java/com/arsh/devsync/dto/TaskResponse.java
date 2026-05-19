@@ -10,6 +10,8 @@ public class TaskResponse {
     private String status;
     private Long userId;
     private String userEmail;
+    private Long projectId;
+    private String projectName;
 
     public TaskResponse(Task task) {
         this.id = task.getId();
@@ -20,6 +22,11 @@ public class TaskResponse {
         if (task.getUser() != null) {
             this.userId = task.getUser().getId();
             this.userEmail = task.getUser().getEmail();
+        }
+
+        if (task.getProject() != null) {
+            this.projectId = task.getProject().getId();
+            this.projectName = task.getProject().getName();
         }
     }
 
@@ -45,5 +52,13 @@ public class TaskResponse {
 
     public String getUserEmail() {
         return userEmail;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public String getProjectName() {
+        return projectName;
     }
 }

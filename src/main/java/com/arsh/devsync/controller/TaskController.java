@@ -24,8 +24,8 @@ public class TaskController {
         this.taskService = taskService;
     }
     @PostMapping
-    public TaskResponse CreateTask(@Valid @RequestBody CreateTaskRequest request) {
-        return new TaskResponse(taskService.createTask(request));
+    public TaskResponse CreateTask(@Valid @RequestBody CreateTaskRequest request, Authentication authentication) {
+        return new TaskResponse(taskService.createTask(request, authentication.getName()));
     }
 
     @GetMapping

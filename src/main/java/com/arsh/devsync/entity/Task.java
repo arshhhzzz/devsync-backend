@@ -18,6 +18,10 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
+
     public Task(){}
 
     public Task(String title, String description, String status) {
@@ -51,5 +55,11 @@ public class Task {
     }
     public void setUser(User user) {
         this.user = user;
+    }
+    public Project getProject() {
+        return project;
+    }
+    public void setProject(Project project) {
+        this.project = project;
     }
 }

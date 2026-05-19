@@ -13,8 +13,9 @@ public class CreateTaskRequest {
     @NotBlank(message = "status is required")
     private String status;
 
-    @NotNull(message = "user ID is required")
-    private Long userId;
+    @NotNull(message = "Project ID is required")
+    private Long projectId;
+
 
     public String getTitle() {
         return title;
@@ -28,8 +29,8 @@ public class CreateTaskRequest {
         return status;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Long getProjectId() {
+        return projectId;
     }
 
 }
