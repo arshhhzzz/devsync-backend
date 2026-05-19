@@ -2,12 +2,11 @@ package com.arsh.devsync.service;
 
 import com.arsh.devsync.dto.CreateProjectRequest;
 import com.arsh.devsync.dto.UpdateProjectRequest;
-import com.arsh.devsync.entity.Project;
-import com.arsh.devsync.entity.User;
-import com.arsh.devsync.entity.Workspace;
+import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.repository.ProjectRepository;
 import com.arsh.devsync.repository.UserRepository;
+import com.arsh.devsync.repository.WorkspaceMembershipRepository;
 import com.arsh.devsync.repository.WorkspaceRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,54 +18,47 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
+    private final WorkspaceMembershipRepository membershipRepository;
 
-    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository,  WorkspaceRepository workspaceRepository) {
+    public ProjectService(
+            ProjectRepository projectRepository,
+            UserRepository userRepository,
+            WorkspaceRepository workspaceRepository,
+            WorkspaceMembershipRepository membershipRepository
+    ) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.workspaceRepository = workspaceRepository;
+        this.membershipRepository = membershipRepository;
     }
 
     public Project createProject(Long workspaceId, CreateProjectRequest request, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        WorkspaceMembership membership = getWorkspaceMembership(workspaceId, email);
 
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
-
-        if (!workspace.getOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not allowed to create project in this workspace");
-        }
+        validateCanManageProjects(membership);
 
         Project project = new Project(
                 request.getName(),
                 request.getDescription()
         );
 
-        project.setWorkspace(workspace);
+        project.setWorkspace(membership.getWorkspace());
 
         return projectRepository.save(project);
     }
 
     public List<Project> getProjectsByWorkspace(Long workspaceId, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        WorkspaceMembership membership = getWorkspaceMembership(workspaceId, email);
 
-        Workspace workspace = workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
-
-        if (!workspace.getOwner().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not allowed to access this workspace");
-        }
-
-        return projectRepository.findByWorkspaceId(workspaceId);
+        return projectRepository.findByWorkspaceId(membership.getWorkspace().getId());
     }
 
     public Project getProjectById(Long id, String email) {
-        return getProjectIfWorkspaceOwner(id, email);
+        return getProjectIfWorkspaceMember(id, email);
     }
 
     public Project updateProject(Long id, UpdateProjectRequest request, String email) {
-        Project project = getProjectIfWorkspaceOwner(id, email);
+        Project project = getProjectIfCanManage(id, email);
 
         project.setName(request.getName());
         project.setDescription(request.getDescription());
@@ -75,18 +67,51 @@ public class ProjectService {
     }
 
     public void deleteProject(Long id, String email) {
-        Project project = getProjectIfWorkspaceOwner(id, email);
+        Project project = getProjectIfCanManage(id, email);
         projectRepository.delete(project);
     }
 
-    private Project getProjectIfWorkspaceOwner(Long projectId, String email) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+    private Project getProjectIfWorkspaceMember(Long projectId, String email) {
+        Project project = getProjectOrThrow(projectId);
 
-        if (!project.getWorkspace().getOwner().getEmail().equals(email)) {
-            throw new RuntimeException("You are not allowed to access this project");
-        }
+        getWorkspaceMembership(project.getWorkspace().getId(), email);
 
         return project;
+    }
+
+    private Project getProjectIfCanManage(Long projectId, String email) {
+        Project project = getProjectOrThrow(projectId);
+
+        WorkspaceMembership membership = getWorkspaceMembership(
+                project.getWorkspace().getId(),
+                email
+        );
+
+        validateCanManageProjects(membership);
+
+        return project;
+    }
+
+    private WorkspaceMembership getWorkspaceMembership(Long workspaceId, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+
+        return membershipRepository.findByWorkspaceAndUser(workspace, user)
+                .orElseThrow(() -> new RuntimeException("You are not a member of this workspace"));
+    }
+
+    private Project getProjectOrThrow(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+    }
+
+    private void validateCanManageProjects(WorkspaceMembership membership) {
+        if (membership.getRole() != WorkspaceRole.OWNER &&
+                membership.getRole() != WorkspaceRole.ADMIN) {
+            throw new RuntimeException("You are not allowed to manage projects in this workspace");
+        }
     }
 }

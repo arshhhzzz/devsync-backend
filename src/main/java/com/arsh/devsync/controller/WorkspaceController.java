@@ -1,10 +1,9 @@
 package com.arsh.devsync.controller;
 
-import com.arsh.devsync.dto.CreateWorkspaceRequest;
-import com.arsh.devsync.dto.UpdateWorkspaceRequest;
-import com.arsh.devsync.dto.WorkspaceResponse;
+import com.arsh.devsync.dto.*;
 import com.arsh.devsync.service.WorkspaceService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +20,7 @@ public class WorkspaceController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public WorkspaceResponse createWorkspace(
             @Valid @RequestBody CreateWorkspaceRequest request,
             Authentication authentication
@@ -60,10 +60,44 @@ public class WorkspaceController {
     }
 
     @DeleteMapping("/{id:\\d+}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteWorkspace(
             @PathVariable Long id,
             Authentication authentication
     ) {
         workspaceService.deleteWorkspace(id, authentication.getName());
+    }
+
+    @PostMapping("/{workspaceId:\\d+}/members")
+    @ResponseStatus(HttpStatus.CREATED)
+    public WorkspaceMemberResponse addMember(
+            @PathVariable Long workspaceId,
+            @Valid @RequestBody AddWorkspaceMemberRequest request,
+            Authentication authentication
+    ) {
+        return new WorkspaceMemberResponse(
+                workspaceService.addMember(workspaceId, request, authentication.getName())
+        );
+    }
+
+    @GetMapping("/{workspaceId:\\d+}/members")
+    public List<WorkspaceMemberResponse> getWorkspaceMembers(
+            @PathVariable Long workspaceId,
+            Authentication authentication
+    ) {
+        return workspaceService.getWorkspaceMembers(workspaceId, authentication.getName())
+                .stream()
+                .map(WorkspaceMemberResponse::new)
+                .toList();
+    }
+
+    @DeleteMapping("/{workspaceId:\\d+}/members/{userId:\\d+}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeMember(
+            @PathVariable Long workspaceId,
+            @PathVariable Long userId,
+            Authentication authentication
+    ) {
+        workspaceService.removeMember(workspaceId, userId, authentication.getName());
     }
 }

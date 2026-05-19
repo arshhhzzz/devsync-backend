@@ -1,16 +1,26 @@
 package com.arsh.devsync.dto;
 
+import com.arsh.devsync.entity.TaskPriority;
+import com.arsh.devsync.entity.TaskStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.time.LocalDate;
 
 public class UpdateTaskRequest {
 
-    @NotBlank(message="Title is required")
+    @NotBlank(message = "Title is required")
     private String title;
 
     private String description;
 
-    @NotBlank(message="Status is required")
-    private String status;
+    @NotNull(message = "Status is required")
+    private TaskStatus status;
+
+    @NotNull(message = "Priority is required")
+    private TaskPriority priority;
+
+    private LocalDate dueDate;
 
     public String getTitle() {
         return title;
@@ -20,7 +30,15 @@ public class UpdateTaskRequest {
         return description;
     }
 
-    public String getStatus() {
+    public TaskStatus getStatus() {
         return status;
+    }
+
+    public TaskPriority getPriority() {
+        return priority;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 }

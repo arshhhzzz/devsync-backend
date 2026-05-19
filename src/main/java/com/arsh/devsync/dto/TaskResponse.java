@@ -1,23 +1,31 @@
 package com.arsh.devsync.dto;
 
 import com.arsh.devsync.entity.Task;
+import com.arsh.devsync.entity.TaskPriority;
+import com.arsh.devsync.entity.TaskStatus;
+
+import java.time.LocalDate;
 
 public class TaskResponse {
 
     private Long id;
     private String title;
     private String description;
-    private String status;
+    private TaskStatus status;
     private Long userId;
     private String userEmail;
     private Long projectId;
     private String projectName;
+    private TaskPriority priority;
+    private LocalDate dueDate;
 
     public TaskResponse(Task task) {
         this.id = task.getId();
         this.title = task.getTitle();
         this.description = task.getDescription();
         this.status = task.getStatus();
+        this.priority = task.getPriority();
+        this.dueDate = task.getDueDate();
 
         if (task.getUser() != null) {
             this.userId = task.getUser().getId();
@@ -42,7 +50,7 @@ public class TaskResponse {
         return description;
     }
 
-    public String getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
@@ -60,5 +68,13 @@ public class TaskResponse {
 
     public String getProjectName() {
         return projectName;
+    }
+
+    public TaskPriority getPriority() {
+        return priority;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 }
