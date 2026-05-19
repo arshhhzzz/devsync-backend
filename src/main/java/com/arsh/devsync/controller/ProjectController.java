@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -50,7 +50,7 @@ public class ProjectController {
                 .toList();
     }
 
-    @GetMapping("/{id:\\d+}")
+    @GetMapping("/projects/{id:\\d+}")
     public ProjectResponse getProjectById(
             @PathVariable Long id,
             Authentication authentication
@@ -60,7 +60,7 @@ public class ProjectController {
         );
     }
 
-    @PutMapping("/{id:\\d+}")
+    @PutMapping("/projects/{id:\\d+}")
     public ProjectResponse updateProject(
             @PathVariable Long id,
             @Valid @RequestBody UpdateProjectRequest request,
@@ -71,7 +71,7 @@ public class ProjectController {
         );
     }
 
-    @DeleteMapping("/{id:\\d+}")
+    @DeleteMapping("/projects/{id:\\d+}")
     public void deleteProject(
             @PathVariable Long id,
             Authentication authentication
