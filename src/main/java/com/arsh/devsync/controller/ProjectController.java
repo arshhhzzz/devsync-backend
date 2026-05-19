@@ -3,8 +3,11 @@ package com.arsh.devsync.controller;
 import com.arsh.devsync.dto.CreateProjectRequest;
 import com.arsh.devsync.dto.ProjectResponse;
 import com.arsh.devsync.dto.UpdateProjectRequest;
+import com.arsh.devsync.entity.Project;
 import com.arsh.devsync.service.ProjectService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,19 +23,28 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @PostMapping
-    public ProjectResponse createProject(
+    @PostMapping("/workspaces/{workspaceId}/projects")
+    public ResponseEntity<ProjectResponse> createProject(
+            @PathVariable Long workspaceId,
             @Valid @RequestBody CreateProjectRequest request,
             Authentication authentication
     ) {
-        return new ProjectResponse(
-                projectService.createProject(request, authentication.getName())
+        Project project = projectService.createProject(
+                workspaceId,
+                request,
+                authentication.getName()
         );
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ProjectResponse(project));
     }
 
-    @GetMapping("/my")
-    public List<ProjectResponse> getMyProjects(Authentication authentication) {
-        return projectService.getMyProjects(authentication.getName())
+    @GetMapping("/workspaces/{workspaceId}/projects")
+    public List<ProjectResponse> getProjectsByWorkspace(
+            @PathVariable Long workspaceId,
+            Authentication authentication
+    ) {
+        return projectService.getProjectsByWorkspace(workspaceId, authentication.getName())
                 .stream()
                 .map(ProjectResponse::new)
                 .toList();

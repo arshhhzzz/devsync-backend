@@ -4,9 +4,11 @@ import com.arsh.devsync.dto.CreateProjectRequest;
 import com.arsh.devsync.dto.UpdateProjectRequest;
 import com.arsh.devsync.entity.Project;
 import com.arsh.devsync.entity.User;
+import com.arsh.devsync.entity.Workspace;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.repository.ProjectRepository;
 import com.arsh.devsync.repository.UserRepository;
+import com.arsh.devsync.repository.WorkspaceRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,38 +18,55 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final WorkspaceRepository workspaceRepository;
 
-    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository) {
+    public ProjectService(ProjectRepository projectRepository, UserRepository userRepository,  WorkspaceRepository workspaceRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.workspaceRepository = workspaceRepository;
     }
 
-    public Project createProject(CreateProjectRequest request, String email) {
-        User owner = userRepository.findByEmail(email)
+    public Project createProject(Long workspaceId, CreateProjectRequest request, String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+
+        if (!workspace.getOwner().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to create project in this workspace");
+        }
 
         Project project = new Project(
                 request.getName(),
                 request.getDescription()
         );
-        project.setOwner(owner);
+
+        project.setWorkspace(workspace);
 
         return projectRepository.save(project);
     }
 
-    public List<Project> getMyProjects(String email) {
-        User owner = userRepository.findByEmail(email)
+    public List<Project> getProjectsByWorkspace(Long workspaceId, String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return projectRepository.findByOwner(owner);
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+
+        if (!workspace.getOwner().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to access this workspace");
+        }
+
+        return projectRepository.findByWorkspaceId(workspaceId);
     }
 
     public Project getProjectById(Long id, String email) {
-        return getProjectIfOwner(id, email);
+        return getProjectIfWorkspaceOwner(id, email);
     }
 
     public Project updateProject(Long id, UpdateProjectRequest request, String email) {
-        Project project = getProjectIfOwner(id, email);
+        Project project = getProjectIfWorkspaceOwner(id, email);
 
         project.setName(request.getName());
         project.setDescription(request.getDescription());
@@ -56,15 +75,15 @@ public class ProjectService {
     }
 
     public void deleteProject(Long id, String email) {
-        Project project = getProjectIfOwner(id, email);
+        Project project = getProjectIfWorkspaceOwner(id, email);
         projectRepository.delete(project);
     }
 
-    private Project getProjectIfOwner(Long projectId, String email) {
+    private Project getProjectIfWorkspaceOwner(Long projectId, String email) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
 
-        if (!project.getOwner().getEmail().equals(email)) {
+        if (!project.getWorkspace().getOwner().getEmail().equals(email)) {
             throw new RuntimeException("You are not allowed to access this project");
         }
 

@@ -7,17 +7,27 @@ public class ProjectResponse {
     private Long id;
     private String name;
     private String description;
-    private Long ownerId;
-    private String ownerEmail;
+
+    private Long workspaceId;
+    private String workspaceName;
+
+    private Long workspaceOwnerId;
+    private String workspaceOwnerEmail;
 
     public ProjectResponse(Project project) {
         this.id = project.getId();
         this.name = project.getName();
         this.description = project.getDescription();
 
-        if (project.getOwner() != null) {
-            this.ownerId = project.getOwner().getId();
-            this.ownerEmail = project.getOwner().getEmail();
+        if (project.getWorkspace() != null) {
+
+            this.workspaceId = project.getWorkspace().getId();
+            this.workspaceName = project.getWorkspace().getName();
+
+            if (project.getWorkspace().getOwner() != null) {
+                this.workspaceOwnerId = project.getWorkspace().getOwner().getId();
+                this.workspaceOwnerEmail = project.getWorkspace().getOwner().getEmail();
+            }
         }
     }
 
@@ -33,11 +43,19 @@ public class ProjectResponse {
         return description;
     }
 
-    public Long getOwnerId() {
-        return ownerId;
+    public Long getWorkspaceId() {
+        return workspaceId;
     }
 
-    public String getOwnerEmail() {
-        return ownerEmail;
+    public String getWorkspaceName() {
+        return workspaceName;
+    }
+
+    public Long getWorkspaceOwnerId() {
+        return workspaceOwnerId;
+    }
+
+    public String getWorkspaceOwnerEmail() {
+        return workspaceOwnerEmail;
     }
 }

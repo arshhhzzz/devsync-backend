@@ -13,17 +13,10 @@ public class Project {
     private String name;
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workspace_id", nullable = false)
+    private Workspace workspace;
 
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
 
     public Long getId() {
         return id;
@@ -46,5 +39,13 @@ public class Project {
     public Project(String name, String description) {
         this.name = name;
         this.description = description;
+    }
+
+    public Workspace getWorkspace() {
+        return workspace;
+    }
+
+    public void setWorkspace(Workspace workspace) {
+        this.workspace = workspace;
     }
 }
