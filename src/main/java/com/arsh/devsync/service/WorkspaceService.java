@@ -7,6 +7,7 @@ import com.arsh.devsync.entity.User;
 import com.arsh.devsync.entity.Workspace;
 import com.arsh.devsync.entity.WorkspaceMembership;
 import com.arsh.devsync.entity.WorkspaceRole;
+import com.arsh.devsync.exception.DuplicateResourceException;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.repository.UserRepository;
 import com.arsh.devsync.repository.WorkspaceMembershipRepository;
@@ -92,7 +93,7 @@ public class WorkspaceService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
 
         if (membershipRepository.existsByWorkspaceAndUser(workspace, userToAdd)) {
-            throw new RuntimeException("User is already a member of this workspace");
+            throw new DuplicateResourceException("User is already a member of this workspace");
         }
 
         WorkspaceMembership membership = new WorkspaceMembership(

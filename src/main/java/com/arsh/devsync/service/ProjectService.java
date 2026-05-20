@@ -4,6 +4,7 @@ import com.arsh.devsync.dto.CreateProjectRequest;
 import com.arsh.devsync.dto.UpdateProjectRequest;
 import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.ResourceNotFoundException;
+import com.arsh.devsync.exception.UnauthorizedActionException;
 import com.arsh.devsync.repository.ProjectRepository;
 import com.arsh.devsync.repository.UserRepository;
 import com.arsh.devsync.repository.WorkspaceMembershipRepository;
@@ -100,7 +101,7 @@ public class ProjectService {
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 
         return membershipRepository.findByWorkspaceAndUser(workspace, user)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this workspace"));
+                .orElseThrow(() -> new UnauthorizedActionException("You are not a member of this workspace"));
     }
 
     private Project getProjectOrThrow(Long projectId) {
@@ -111,7 +112,7 @@ public class ProjectService {
     private void validateCanManageProjects(WorkspaceMembership membership) {
         if (membership.getRole() != WorkspaceRole.OWNER &&
                 membership.getRole() != WorkspaceRole.ADMIN) {
-            throw new RuntimeException("You are not allowed to manage projects in this workspace");
+            throw new UnauthorizedActionException("You are not allowed to manage projects in this workspace");
         }
     }
 }

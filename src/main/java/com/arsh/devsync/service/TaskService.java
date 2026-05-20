@@ -6,6 +6,7 @@ import com.arsh.devsync.dto.TaskResponse;
 import com.arsh.devsync.dto.UpdateTaskRequest;
 import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.ResourceNotFoundException;
+import com.arsh.devsync.exception.UnauthorizedActionException;
 import com.arsh.devsync.repository.ProjectRepository;
 import com.arsh.devsync.repository.TaskRepository;
 import com.arsh.devsync.repository.UserRepository;
@@ -94,7 +95,7 @@ public class TaskService {
                 membership.getRole() == WorkspaceRole.ADMIN;
 
         if (!isTaskCreator && !isAdminOrOwner) {
-            throw new RuntimeException("You are not allowed to update this task");
+            throw new UnauthorizedActionException("You are not allowed to update this task");
         }
 
         User assignee = resolveAssignee(
@@ -130,7 +131,7 @@ public class TaskService {
                 membership.getRole() == WorkspaceRole.ADMIN;
 
         if (!isTaskCreator && !isAdminOrOwner) {
-            throw new RuntimeException("You are not allowed to delete this task");
+            throw new UnauthorizedActionException("You are not allowed to delete this task");
         }
 
         taskRepository.delete(task);
@@ -197,7 +198,7 @@ public class TaskService {
 
     private WorkspaceMembership getMembershipForProject(Project project, User user) {
         return membershipRepository.findByWorkspaceAndUser(project.getWorkspace(), user)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this workspace"));
+                .orElseThrow(() -> new UnauthorizedActionException("You are not a member of this workspace"));
     }
 
     private User resolveAssignee(Long assigneeId, Project project, User currentUser, WorkspaceMembership membership) {
@@ -209,13 +210,13 @@ public class TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Assignee not found with id: " + assigneeId));
 
         membershipRepository.findByWorkspaceAndUser(project.getWorkspace(), assignee)
-                .orElseThrow(() -> new RuntimeException("Assignee is not a member of this workspace"));
+                .orElseThrow(() -> new UnauthorizedActionException("Assignee is not a member of this workspace"));
 
         boolean isAdminOrOwner = membership.getRole() == WorkspaceRole.OWNER ||
                 membership.getRole() == WorkspaceRole.ADMIN;
 
         if (!isAdminOrOwner && !assignee.getId().equals(currentUser.getId())) {
-            throw new RuntimeException("MEMBER can only assign task to themselves");
+            throw new UnauthorizedActionException("MEMBER can only assign task to themselves");
         }
 
         return assignee;
