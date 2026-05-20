@@ -10,6 +10,8 @@ import com.arsh.devsync.repository.AuditLogRepository;
 import com.arsh.devsync.repository.UserRepository;
 import com.arsh.devsync.repository.WorkspaceMembershipRepository;
 import com.arsh.devsync.repository.WorkspaceRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -124,9 +126,13 @@ public class WorkspaceService {
         return savedMembership;
     }
 
-    public List<WorkspaceMembership> getWorkspaceMembers(Long workspaceId, String email) {
+    public Page<WorkspaceMembership> getWorkspaceMembers(
+            Long workspaceId,
+            String email,
+            Pageable pageable
+    ) {
         Workspace workspace = getWorkspaceIfMember(workspaceId, email);
-        return membershipRepository.findByWorkspace(workspace);
+        return membershipRepository.findByWorkspace(workspace, pageable);
     }
 
     public void removeMember(Long workspaceId, Long userId, String email) {

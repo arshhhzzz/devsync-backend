@@ -6,6 +6,8 @@ import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.exception.UnauthorizedActionException;
 import com.arsh.devsync.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -58,10 +60,22 @@ public class ProjectService {
         return savedProject;
     }
 
-    public List<Project> getProjectsByWorkspace(Long workspaceId, String email) {
-        WorkspaceMembership membership = getWorkspaceMembership(workspaceId, email);
+    public Page<Project> getProjectsByWorkspace(
+            Long workspaceId,
+            String email,
+            Pageable pageable
+    ) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return projectRepository.findByWorkspaceId(membership.getWorkspace().getId());
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+
+        if (!workspace.getOwner().getId().equals(user.getId())) {
+            throw new UnauthorizedActionException("You are not allowed to access this workspace");
+        }
+
+        return projectRepository.findByWorkspaceId(workspaceId, pageable);
     }
 
     public Project getProjectById(Long id, String email) {

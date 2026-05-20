@@ -3,6 +3,9 @@ package com.arsh.devsync.controller;
 import com.arsh.devsync.dto.*;
 import com.arsh.devsync.service.WorkspaceService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -81,14 +84,27 @@ public class WorkspaceController {
     }
 
     @GetMapping("/{workspaceId:\\d+}/members")
-    public List<WorkspaceMemberResponse> getWorkspaceMembers(
+    public Page<WorkspaceMemberResponse> getWorkspaceMembers(
             @PathVariable Long workspaceId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "joinedAt") String sortBy,
+            @RequestParam(defaultValue = "asc") String order,
             Authentication authentication
     ) {
-        return workspaceService.getWorkspaceMembers(workspaceId, authentication.getName())
-                .stream()
-                .map(WorkspaceMemberResponse::new)
-                .toList();
+        Sort.Direction direction = order.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        PageRequest pageRequest = PageRequest.of(
+                page,
+                size,
+                Sort.by(direction, sortBy)
+        );
+
+        return workspaceService
+                .getWorkspaceMembers(workspaceId, authentication.getName(), pageRequest)
+                .map(WorkspaceMemberResponse::new);
     }
 
     @DeleteMapping("/{workspaceId:\\d+}/members/{userId:\\d+}")

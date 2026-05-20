@@ -3,6 +3,8 @@ package com.arsh.devsync.repository;
 import com.arsh.devsync.entity.User;
 import com.arsh.devsync.entity.Workspace;
 import com.arsh.devsync.entity.WorkspaceMembership;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -17,4 +19,6 @@ public interface WorkspaceMembershipRepository extends JpaRepository<WorkspaceMe
     List<WorkspaceMembership> findByUser(User user);
 
     List<WorkspaceMembership> findByWorkspace(Workspace workspace);
+
+    Page<WorkspaceMembership> findByWorkspace(Workspace workspace, Pageable pageable);
 }
