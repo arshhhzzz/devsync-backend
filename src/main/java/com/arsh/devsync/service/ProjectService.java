@@ -5,10 +5,7 @@ import com.arsh.devsync.dto.UpdateProjectRequest;
 import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.exception.UnauthorizedActionException;
-import com.arsh.devsync.repository.ProjectRepository;
-import com.arsh.devsync.repository.UserRepository;
-import com.arsh.devsync.repository.WorkspaceMembershipRepository;
-import com.arsh.devsync.repository.WorkspaceRepository;
+import com.arsh.devsync.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,17 +17,20 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMembershipRepository membershipRepository;
+    private final AuditLogService auditLogService;
 
     public ProjectService(
             ProjectRepository projectRepository,
             UserRepository userRepository,
             WorkspaceRepository workspaceRepository,
-            WorkspaceMembershipRepository membershipRepository
+            WorkspaceMembershipRepository membershipRepository,
+            AuditLogService auditLogService
     ) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.workspaceRepository = workspaceRepository;
         this.membershipRepository = membershipRepository;
+        this.auditLogService = auditLogService;
     }
 
     public Project createProject(Long workspaceId, CreateProjectRequest request, String email) {
@@ -45,7 +45,17 @@ public class ProjectService {
 
         project.setWorkspace(membership.getWorkspace());
 
-        return projectRepository.save(project);
+        Project savedProject = projectRepository.save(project);
+
+        auditLogService.log(
+                savedProject.getWorkspace().getId(),
+                email,
+                "PROJECT_CREATED",
+                "PROJECT",
+                savedProject.getId()
+        );
+
+        return savedProject;
     }
 
     public List<Project> getProjectsByWorkspace(Long workspaceId, String email) {
@@ -64,12 +74,33 @@ public class ProjectService {
         project.setName(request.getName());
         project.setDescription(request.getDescription());
 
-        return projectRepository.save(project);
+        Project updatedProject = projectRepository.save(project);
+
+        auditLogService.log(
+                updatedProject.getWorkspace().getId(),
+                email,
+                "PROJECT_UPDATED",
+                "PROJECT",
+                updatedProject.getId()
+        );
+
+        return updatedProject;
     }
 
     public void deleteProject(Long id, String email) {
         Project project = getProjectIfCanManage(id, email);
+        Long workspaceId = project.getWorkspace().getId();
+        Long projectId = project.getId();
+
         projectRepository.delete(project);
+
+        auditLogService.log(
+                workspaceId,
+                email,
+                "PROJECT_DELETED",
+                "PROJECT",
+                projectId
+        );
     }
 
     private Project getProjectIfWorkspaceMember(Long projectId, String email) {

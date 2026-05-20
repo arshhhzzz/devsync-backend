@@ -100,4 +100,15 @@ public class WorkspaceController {
     ) {
         workspaceService.removeMember(workspaceId, userId, authentication.getName());
     }
+
+    @GetMapping("/{workspaceId:\\d+}/audit-logs")
+    public List<AuditLogResponse> getAuditLogs(
+            @PathVariable Long workspaceId,
+            Authentication authentication
+    ) {
+        return workspaceService.getAuditLogs(workspaceId, authentication.getName())
+                .stream()
+                .map(AuditLogResponse::new)
+                .toList();
+    }
 }

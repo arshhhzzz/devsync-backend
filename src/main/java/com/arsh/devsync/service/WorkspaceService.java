@@ -3,12 +3,10 @@ package com.arsh.devsync.service;
 import com.arsh.devsync.dto.AddWorkspaceMemberRequest;
 import com.arsh.devsync.dto.CreateWorkspaceRequest;
 import com.arsh.devsync.dto.UpdateWorkspaceRequest;
-import com.arsh.devsync.entity.User;
-import com.arsh.devsync.entity.Workspace;
-import com.arsh.devsync.entity.WorkspaceMembership;
-import com.arsh.devsync.entity.WorkspaceRole;
+import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.DuplicateResourceException;
 import com.arsh.devsync.exception.ResourceNotFoundException;
+import com.arsh.devsync.repository.AuditLogRepository;
 import com.arsh.devsync.repository.UserRepository;
 import com.arsh.devsync.repository.WorkspaceMembershipRepository;
 import com.arsh.devsync.repository.WorkspaceRepository;
@@ -22,15 +20,18 @@ public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final UserRepository userRepository;
     private final WorkspaceMembershipRepository membershipRepository;
+    private final AuditLogService auditLogService;
 
     public WorkspaceService(
             WorkspaceRepository workspaceRepository,
             UserRepository userRepository,
-            WorkspaceMembershipRepository membershipRepository
+            WorkspaceMembershipRepository membershipRepository,
+            AuditLogService auditLogService
     ) {
         this.workspaceRepository = workspaceRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
+        this.auditLogService = auditLogService;
     }
 
     public Workspace createWorkspace(CreateWorkspaceRequest request, String email) {
@@ -51,6 +52,14 @@ public class WorkspaceService {
         );
 
         membershipRepository.save(membership);
+
+        auditLogService.log(
+                savedWorkspace.getId(),
+                email,
+                "WORKSPACE_CREATED",
+                "WORKSPACE",
+                savedWorkspace.getId()
+        );
 
         return savedWorkspace;
     }
@@ -102,7 +111,17 @@ public class WorkspaceService {
                 request.getRole()
         );
 
-        return membershipRepository.save(membership);
+        WorkspaceMembership savedMembership = membershipRepository.save(membership);
+
+        auditLogService.log(
+                workspace.getId(),
+                email,
+                "MEMBER_ADDED",
+                "WORKSPACE_MEMBERSHIP",
+                savedMembership.getId()
+        );
+
+        return savedMembership;
     }
 
     public List<WorkspaceMembership> getWorkspaceMembers(Long workspaceId, String email) {
@@ -135,7 +154,17 @@ public class WorkspaceService {
             throw new RuntimeException("ADMIN cannot remove another ADMIN");
         }
 
+        Long membershipId = targetMembership.getId();
+
         membershipRepository.delete(targetMembership);
+
+        auditLogService.log(
+                workspace.getId(),
+                email,
+                "MEMBER_REMOVED",
+                "WORKSPACE_MEMBERSHIP",
+                membershipId
+        );
     }
 
     private User getUserByEmail(String email) {
@@ -179,5 +208,10 @@ public class WorkspaceService {
         }
 
         return membership.getWorkspace();
+    }
+
+    public List<AuditLog> getAuditLogs(Long workspaceId, String email) {
+        getWorkspaceIfAdminOrOwner(workspaceId, email);
+        return auditLogService.getAuditLogsByWorkspace(workspaceId);
     }
 }

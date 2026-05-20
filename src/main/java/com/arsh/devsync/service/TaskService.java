@@ -25,17 +25,20 @@ public class TaskService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final WorkspaceMembershipRepository membershipRepository;
+    private final AuditLogService auditLogService;
 
     public TaskService(
             TaskRepository taskRepository,
             UserRepository userRepository,
             ProjectRepository projectRepository,
-            WorkspaceMembershipRepository membershipRepository
+            WorkspaceMembershipRepository membershipRepository,
+            AuditLogService auditLogService
     ) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.membershipRepository = membershipRepository;
+        this.auditLogService = auditLogService;
     }
 
     public Task createTask(Long projectId, CreateTaskRequest request, String email) {
@@ -63,7 +66,17 @@ public class TaskService {
         task.setProject(project);
         task.setAssignee(assignee);
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+
+        auditLogService.log(
+                project.getWorkspace().getId(),
+                email,
+                "TASK_CREATED",
+                "TASK",
+                savedTask.getId()
+        );
+
+        return savedTask;
     }
 
     public List<Task> getTasksByProject(Long projectId, String email) {
@@ -112,7 +125,17 @@ public class TaskService {
         task.setDueDate(request.getDueDate());
         task.setAssignee(assignee);
 
-        return taskRepository.save(task);
+        Task updatedTask = taskRepository.save(task);
+
+        auditLogService.log(
+                updatedTask.getProject().getWorkspace().getId(),
+                email,
+                "TASK_UPDATED",
+                "TASK",
+                updatedTask.getId()
+        );
+
+        return updatedTask;
     }
 
     public List<Task> getTasksAssignedToMe(String email) {
@@ -134,7 +157,18 @@ public class TaskService {
             throw new UnauthorizedActionException("You are not allowed to delete this task");
         }
 
+        Long workspaceId = task.getProject().getWorkspace().getId();
+        Long taskId = task.getId();
+
         taskRepository.delete(task);
+
+        auditLogService.log(
+                workspaceId,
+                email,
+                "TASK_DELETED",
+                "TASK",
+                taskId
+        );
     }
 
     public List<Task> getAllTasks() {
