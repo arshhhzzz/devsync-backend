@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: devsync-postgres
+    restart: always
+
+    environment:
+      POSTGRES_DB: devsync
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Natasha
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - devsync_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  devsync_postgres_data:

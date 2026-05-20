@@ -79,4 +79,8 @@ public class TaskResponse {
     public LocalDate getDueDate() {
         return dueDate;
     }
+
+    public Long getAssigneeId() {
+        return assigneeId;
+    }
 }
