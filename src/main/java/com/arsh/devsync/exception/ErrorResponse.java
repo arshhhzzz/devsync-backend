@@ -1,40 +1,49 @@
 package com.arsh.devsync.exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDateTime;
+import java.util.Map;
 
-public class ErrorResponse {
-
-    private LocalDateTime timestamp;
-    private int status;
-    private String error;
-    private String message;
-    private String path;
-
-    public ErrorResponse(int status, String error, String message, String path) {
-        this.timestamp = LocalDateTime.now();
-        this.status = status;
-        this.error = error;
-        this.message = message;
-        this.path = path;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record ErrorResponse(
+        int status,
+        String error,
+        String message,
+        LocalDateTime timestamp,
+        String path,
+        Map<String, String> errors
+) {
+    public static ErrorResponse of(
+            int status,
+            String error,
+            String message,
+            String path
+    ) {
+        return new ErrorResponse(
+                status,
+                error,
+                message,
+                LocalDateTime.now(),
+                path,
+                null
+        );
     }
 
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getPath() {
-        return path;
+    public static ErrorResponse withErrors(
+            int status,
+            String error,
+            String message,
+            String path,
+            Map<String, String> errors
+    ) {
+        return new ErrorResponse(
+                status,
+                error,
+                message,
+                LocalDateTime.now(),
+                path,
+                errors
+        );
     }
 }
