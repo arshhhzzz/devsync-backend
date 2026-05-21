@@ -2,11 +2,12 @@ package com.arsh.devsync.controller;
 
 import com.arsh.devsync.dto.AuthResponse;
 import com.arsh.devsync.dto.LoginRequest;
+import com.arsh.devsync.dto.LogoutRequest;
+import com.arsh.devsync.dto.RefreshTokenRequest;
 import com.arsh.devsync.dto.SignupRequest;
-import com.arsh.devsync.dto.UserResponse;
-import com.arsh.devsync.entity.User;
 import com.arsh.devsync.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,12 +21,31 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public UserResponse signup(@Valid @RequestBody SignupRequest request) {
-        return new UserResponse(authService.signup(request));
+    public AuthResponse signup(
+            @Valid @RequestBody SignupRequest request
+    ) {
+        return authService.signup(request);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+    public AuthResponse login(
+            @Valid @RequestBody LoginRequest request
+    ) {
         return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(
+            @Valid @RequestBody RefreshTokenRequest request
+    ) {
+        return ResponseEntity.ok(authService.refreshToken(request));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @Valid @RequestBody LogoutRequest request
+    ) {
+        authService.logout(request);
+        return ResponseEntity.noContent().build();
     }
 }

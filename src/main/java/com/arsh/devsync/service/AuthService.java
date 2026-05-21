@@ -2,9 +2,13 @@ package com.arsh.devsync.service;
 
 import com.arsh.devsync.dto.AuthResponse;
 import com.arsh.devsync.dto.LoginRequest;
+import com.arsh.devsync.dto.LogoutRequest;
+import com.arsh.devsync.dto.RefreshTokenRequest;
 import com.arsh.devsync.dto.SignupRequest;
-import com.arsh.devsync.dto.UserResponse;
+import com.arsh.devsync.entity.RefreshToken;
 import com.arsh.devsync.entity.User;
+import com.arsh.devsync.exception.DuplicateResourceException;
+import com.arsh.devsync.exception.UnauthorizedActionException;
 import com.arsh.devsync.repository.UserRepository;
 import com.arsh.devsync.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,17 +20,25 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,  JwtService jwtService) {
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
-    public User signup(SignupRequest signupRequest) {
+    public AuthResponse signup(SignupRequest signupRequest) {
         if (userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
+
         String hashedPassword = passwordEncoder.encode(signupRequest.getPassword());
 
         User user = new User(
@@ -35,22 +47,52 @@ public class AuthService {
                 "USER",
                 hashedPassword
         );
-        return userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+
+        String accessToken = jwtService.generateToken(savedUser.getEmail());
+        String refreshToken = refreshTokenService.createRefreshToken(savedUser).getToken();
+
+        return new AuthResponse(accessToken, refreshToken);
     }
 
     public AuthResponse login(LoginRequest loginRequest) {
-        User  user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UnauthorizedActionException("Invalid email or password"));
 
-        boolean isPasswordCorrect = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
+        boolean isPasswordCorrect = passwordEncoder.matches(
+                loginRequest.getPassword(),
+                user.getPassword()
+        );
 
         if (!isPasswordCorrect) {
-            throw  new RuntimeException("Invalid email or password");
+            throw new UnauthorizedActionException("Invalid email or password");
         }
 
-        String token = jwtService.generateToken(user.getEmail());
+        String accessToken = jwtService.generateToken(user.getEmail());
+        String refreshToken = refreshTokenService.createRefreshToken(user).getToken();
 
-        return new AuthResponse(token);
+        return new AuthResponse(accessToken, refreshToken);
     }
 
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(
+                request.refreshToken()
+        );
+
+        User user = refreshToken.getUser();
+
+        String newAccessToken = jwtService.generateToken(user.getEmail());
+        String newRefreshToken = refreshTokenService.createRefreshToken(user).getToken();
+
+        return new AuthResponse(newAccessToken, newRefreshToken);
+    }
+
+    public void logout(LogoutRequest request) {
+        RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(
+                request.refreshToken()
+        );
+
+        refreshTokenService.deleteByUser(refreshToken.getUser());
+    }
 }

@@ -8,6 +8,7 @@ import com.arsh.devsync.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +22,7 @@ public class RefreshTokenService {
     @Value("${jwt.refresh-expiration}")
     private Long refreshExpiration;
 
+    @Transactional
     public RefreshToken createRefreshToken(User user) {
         refreshTokenRepository.deleteByUser(user);
 
@@ -36,6 +38,7 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(refreshToken);
     }
 
+    @Transactional
     public RefreshToken verifyRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new UnauthorizedActionException("Invalid refresh token"));
@@ -48,6 +51,7 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    @Transactional
     public void deleteByUser(User user) {
         refreshTokenRepository.deleteByUser(user);
     }
