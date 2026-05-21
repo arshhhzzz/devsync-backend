@@ -19,15 +19,26 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private Long expiration;
 
+    @Value("${jwt.refresh-expiration}")
+    private Long refreshExpiration;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(String email) {
+        return buildToken(email, expiration);
+    }
+
+    public String generateRefreshToken(String email) {
+        return buildToken(email, refreshExpiration);
+    }
+
+    private String buildToken(String email, Long tokenExpiration) {
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + tokenExpiration))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -37,6 +48,11 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, String email) {
+        String username = extractUsername(token);
+        return username.equals(email) && !isTokenExpired(token);
+    }
+
+    public boolean isRefreshTokenValid(String token, String email) {
         String username = extractUsername(token);
         return username.equals(email) && !isTokenExpired(token);
     }
