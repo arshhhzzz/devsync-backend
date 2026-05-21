@@ -127,4 +127,14 @@ public class WorkspaceController {
                 .map(AuditLogResponse::new)
                 .toList();
     }
+
+    @PostMapping("/{id}/restore")
+    public WorkspaceResponse restoreWorkspace(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return new WorkspaceResponse(
+                workspaceService.restoreWorkspace(id, authentication.getName())
+        );
+    }
 }

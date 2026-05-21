@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -261,5 +262,53 @@ public class TaskService {
         return assignee;
     }
 
+    @Transactional
+    public Task restoreTask(Long taskId, String email) {
+        Task task = taskRepository.findByIdIncludingDeleted(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        Project project = task.getProject();
+        Workspace workspace = project.getWorkspace();
+
+        if (workspace.getDeletedAt() != null) {
+            throw new RuntimeException("Cannot restore task because workspace is deleted");
+        }
+
+        if (project.getDeletedAt() != null) {
+            throw new RuntimeException("Cannot restore task because project is deleted");
+        }
+
+        User user = getUserByEmail(email);
+
+        WorkspaceMembership membership = membershipRepository
+                .findByWorkspaceAndUser(workspace, user)
+                .orElseThrow(() -> new RuntimeException("You are not a member of this workspace"));
+
+        boolean isOwnerOrAdmin =
+                membership.getRole() == WorkspaceRole.OWNER ||
+                        membership.getRole() == WorkspaceRole.ADMIN;
+
+        boolean isCreator =
+                task.getUser() != null &&
+                        task.getUser().getId().equals(user.getId());
+
+        if (!isOwnerOrAdmin && !isCreator) {
+            throw new RuntimeException("You are not allowed to restore this task");
+        }
+
+        task.setDeletedAt(null);
+
+        Task restoredTask = taskRepository.save(task);
+
+        auditLogService.log(
+                workspace.getId(),
+                email,
+                "TASK_RESTORED",
+                "TASK",
+                restoredTask.getId()
+        );
+
+        return restoredTask;
+    }
 
 }

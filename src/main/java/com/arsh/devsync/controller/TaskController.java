@@ -107,4 +107,14 @@ public class TaskController {
                 .map(TaskResponse::new)
                 .toList();
     }
+
+    @PostMapping("/{id}/restore")
+    public TaskResponse restoreTask(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return new TaskResponse(
+                taskService.restoreTask(id, authentication.getName())
+        );
+    }
 }

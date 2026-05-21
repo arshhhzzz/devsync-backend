@@ -6,13 +6,11 @@ import com.arsh.devsync.dto.UpdateWorkspaceRequest;
 import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.DuplicateResourceException;
 import com.arsh.devsync.exception.ResourceNotFoundException;
-import com.arsh.devsync.repository.AuditLogRepository;
-import com.arsh.devsync.repository.UserRepository;
-import com.arsh.devsync.repository.WorkspaceMembershipRepository;
-import com.arsh.devsync.repository.WorkspaceRepository;
+import com.arsh.devsync.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,17 +21,23 @@ public class WorkspaceService {
     private final UserRepository userRepository;
     private final WorkspaceMembershipRepository membershipRepository;
     private final AuditLogService auditLogService;
+    private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
     public WorkspaceService(
             WorkspaceRepository workspaceRepository,
             UserRepository userRepository,
             WorkspaceMembershipRepository membershipRepository,
-            AuditLogService auditLogService
+            AuditLogService auditLogService,
+            ProjectRepository projectRepository,
+            TaskRepository taskRepository
     ) {
         this.workspaceRepository = workspaceRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
         this.auditLogService = auditLogService;
+        this.projectRepository = projectRepository;
+        this.taskRepository = taskRepository;
     }
 
     public Workspace createWorkspace(CreateWorkspaceRequest request, String email) {
@@ -88,9 +92,29 @@ public class WorkspaceService {
         return workspaceRepository.save(workspace);
     }
 
+    @Transactional
     public void deleteWorkspace(Long id, String email) {
         Workspace workspace = getWorkspaceIfOwner(id, email);
+
+        List<Project> projects = projectRepository.findByWorkspace(workspace);
+
+        for (Project project : projects) {
+            List<Task> tasks = taskRepository.findByProject(project);
+
+            taskRepository.deleteAll(tasks);
+
+            projectRepository.delete(project);
+        }
+
         workspaceRepository.delete(workspace);
+
+        auditLogService.log(
+                workspace.getId(),
+                email,
+                "WORKSPACE_DELETED",
+                "WORKSPACE",
+                workspace.getId()
+        );
     }
 
     public WorkspaceMembership addMember(Long workspaceId, AddWorkspaceMemberRequest request, String email) {
@@ -219,5 +243,29 @@ public class WorkspaceService {
     public List<AuditLog> getAuditLogs(Long workspaceId, String email) {
         getWorkspaceIfAdminOrOwner(workspaceId, email);
         return auditLogService.getAuditLogsByWorkspace(workspaceId);
+    }
+
+    @Transactional
+    public Workspace restoreWorkspace(Long id, String email) {
+        Workspace workspace = workspaceRepository.findByIdIncludingDeleted(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found with id: " + id));
+
+        if (!workspace.getOwner().getEmail().equals(email)) {
+            throw new RuntimeException("Only workspace owner can restore this workspace");
+        }
+
+        workspace.setDeletedAt(null);
+
+        Workspace restoredWorkspace = workspaceRepository.save(workspace);
+
+        auditLogService.log(
+                restoredWorkspace.getId(),
+                email,
+                "WORKSPACE_RESTORED",
+                "WORKSPACE",
+                restoredWorkspace.getId()
+        );
+
+        return restoredWorkspace;
     }
 }

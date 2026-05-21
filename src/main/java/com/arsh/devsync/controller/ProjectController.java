@@ -94,4 +94,14 @@ public class ProjectController {
     ) {
         projectService.deleteProject(id, authentication.getName());
     }
+
+    @PostMapping("/{id}/restore")
+    public ProjectResponse restoreProject(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return new ProjectResponse(
+                projectService.restoreProject(id, authentication.getName())
+        );
+    }
 }

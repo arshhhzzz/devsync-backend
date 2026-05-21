@@ -1,11 +1,16 @@
 package com.arsh.devsync.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
+@SQLDelete(sql = "UPDATE tasks SET deleted_at = now() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Task {
 
     @Id
@@ -24,6 +29,9 @@ public class Task {
     private TaskPriority priority;
 
     private LocalDate dueDate;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -103,4 +111,6 @@ public class Task {
     public void setAssignee(User assignee) {
         this.assignee = assignee;
     }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

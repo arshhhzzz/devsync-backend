@@ -1,9 +1,15 @@
 package com.arsh.devsync.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Project")
+@SQLDelete(sql = "UPDATE project SET deleted_at = now() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Project {
 
     @Id
@@ -16,6 +22,9 @@ public class Project {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
     private Workspace workspace;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
 
     public Long getId() {
@@ -48,4 +57,6 @@ public class Project {
     public void setWorkspace(Workspace workspace) {
         this.workspace = workspace;
     }
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }
