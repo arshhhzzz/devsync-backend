@@ -95,7 +95,7 @@ public class ProjectController {
         projectService.deleteProject(id, authentication.getName());
     }
 
-    @PostMapping("/{id}/restore")
+    @PostMapping("/projects/{id}/restore")
     public ProjectResponse restoreProject(
             @PathVariable Long id,
             Authentication authentication

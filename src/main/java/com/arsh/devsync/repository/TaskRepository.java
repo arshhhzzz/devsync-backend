@@ -32,4 +32,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     @Query(value = "SELECT * FROM tasks WHERE project_id = :projectId", nativeQuery = true)
     List<Task> findByProjectIdIncludingDeleted(@Param("projectId") Long projectId);
+
+    @Query(value = "SELECT project_id FROM tasks WHERE id = :taskId", nativeQuery = true)
+    Long findProjectIdIncludingDeletedTask(@Param("taskId") Long taskId);
 }

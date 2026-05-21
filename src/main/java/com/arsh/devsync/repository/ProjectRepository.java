@@ -22,9 +22,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     List<Project> findByWorkspace(Workspace workspace);
 
-    @Query(value = "SELECT * FROM project WHERE id = :id", nativeQuery = true)
+    @Query(value = "SELECT * FROM projects WHERE id = :id", nativeQuery = true)
     Optional<Project> findByIdIncludingDeleted(@Param("id") Long id);
 
-    @Query(value = "SELECT * FROM project WHERE workspace_id = :workspaceId", nativeQuery = true)
+    @Query(value = "SELECT * FROM projects WHERE workspace_id = :workspaceId", nativeQuery = true)
     List<Project> findByWorkspaceIdIncludingDeleted(@Param("workspaceId") Long workspaceId);
 }

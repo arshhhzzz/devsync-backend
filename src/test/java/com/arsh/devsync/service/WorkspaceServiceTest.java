@@ -9,15 +9,14 @@ import com.arsh.devsync.entity.WorkspaceMembership;
 import com.arsh.devsync.entity.WorkspaceRole;
 import com.arsh.devsync.exception.DuplicateResourceException;
 import com.arsh.devsync.exception.ResourceNotFoundException;
-import com.arsh.devsync.repository.UserRepository;
-import com.arsh.devsync.repository.WorkspaceMembershipRepository;
-import com.arsh.devsync.repository.WorkspaceRepository;
+import com.arsh.devsync.repository.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,6 +36,12 @@ class WorkspaceServiceTest {
 
     @Mock
     private AuditLogService auditLogService;
+
+    @Mock
+    private ProjectRepository projectRepository;
+
+    @Mock
+    private TaskRepository taskRepository;
 
     @InjectMocks
     private WorkspaceService workspaceService;
@@ -259,9 +264,11 @@ class WorkspaceServiceTest {
         when(workspaceRepository.findById(10L)).thenReturn(Optional.of(workspace));
         when(membershipRepository.findByWorkspaceAndUser(workspace, owner))
                 .thenReturn(Optional.of(membership));
+        when(projectRepository.findByWorkspace(workspace)).thenReturn(List.of());
 
         workspaceService.deleteWorkspace(10L, "owner@test.com");
 
+        verify(projectRepository).findByWorkspace(workspace);
         verify(workspaceRepository).delete(workspace);
     }
 

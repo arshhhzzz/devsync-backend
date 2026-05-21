@@ -108,7 +108,7 @@ public class TaskController {
                 .toList();
     }
 
-    @PostMapping("/{id}/restore")
+    @PostMapping("/tasks/{id}/restore")
     public TaskResponse restoreTask(
             @PathVariable Long id,
             Authentication authentication

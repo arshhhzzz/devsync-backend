@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +26,7 @@ class ProjectServiceTest {
     @Mock private WorkspaceRepository workspaceRepository;
     @Mock private WorkspaceMembershipRepository membershipRepository;
     @Mock private AuditLogService auditLogService;
+    @Mock private TaskRepository taskRepository;
 
     @InjectMocks
     private ProjectService projectService;
@@ -216,9 +218,11 @@ class ProjectServiceTest {
         when(workspaceRepository.findById(10L)).thenReturn(Optional.of(workspace));
         when(membershipRepository.findByWorkspaceAndUser(workspace, owner))
                 .thenReturn(Optional.of(membership));
+        when(taskRepository.findByProject(project)).thenReturn(List.of());
 
         projectService.deleteProject(100L, "owner@test.com");
 
+        verify(taskRepository).findByProject(project);
         verify(projectRepository).delete(project);
         verify(auditLogService).log(
                 eq(10L),
@@ -227,6 +231,39 @@ class ProjectServiceTest {
                 eq("PROJECT"),
                 eq(100L)
         );
+    }
+
+    @Test
+    void deleteProject_shouldSoftDeleteTasksBeforeProject() {
+        User owner = user(1L, "Owner", "owner@test.com");
+        Workspace workspace = workspace(10L, owner);
+        Project project = project(100L, workspace);
+
+        Task task = new Task(
+                "Task",
+                "Desc",
+                TaskStatus.TODO,
+                TaskPriority.HIGH,
+                java.time.LocalDate.now()
+        );
+
+        WorkspaceMembership membership = new WorkspaceMembership(
+                workspace,
+                owner,
+                WorkspaceRole.OWNER
+        );
+
+        when(projectRepository.findById(100L)).thenReturn(Optional.of(project));
+        when(userRepository.findByEmail("owner@test.com")).thenReturn(Optional.of(owner));
+        when(workspaceRepository.findById(10L)).thenReturn(Optional.of(workspace));
+        when(membershipRepository.findByWorkspaceAndUser(workspace, owner))
+                .thenReturn(Optional.of(membership));
+        when(taskRepository.findByProject(project)).thenReturn(List.of(task));
+
+        projectService.deleteProject(100L, "owner@test.com");
+
+        verify(taskRepository).delete(task);
+        verify(projectRepository).delete(project);
     }
 
     private User user(Long id, String name, String email) {

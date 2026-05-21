@@ -267,22 +267,26 @@ public class TaskService {
         Task task = taskRepository.findByIdIncludingDeleted(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
 
-        Project project = task.getProject();
+        Long projectId = taskRepository.findProjectIdIncludingDeletedTask(taskId);
+
+        Project project = projectRepository.findByIdIncludingDeleted(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+
         Workspace workspace = project.getWorkspace();
 
         if (workspace.getDeletedAt() != null) {
-            throw new RuntimeException("Cannot restore task because workspace is deleted");
+            throw new UnauthorizedActionException("Cannot restore task because workspace is deleted");
         }
 
         if (project.getDeletedAt() != null) {
-            throw new RuntimeException("Cannot restore task because project is deleted");
+            throw new UnauthorizedActionException("Cannot restore task because project is deleted");
         }
 
         User user = getUserByEmail(email);
 
         WorkspaceMembership membership = membershipRepository
                 .findByWorkspaceAndUser(workspace, user)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this workspace"));
+                .orElseThrow(() -> new UnauthorizedActionException("You are not a member of this workspace"));
 
         boolean isOwnerOrAdmin =
                 membership.getRole() == WorkspaceRole.OWNER ||
@@ -293,7 +297,7 @@ public class TaskService {
                         task.getUser().getId().equals(user.getId());
 
         if (!isOwnerOrAdmin && !isCreator) {
-            throw new RuntimeException("You are not allowed to restore this task");
+            throw new UnauthorizedActionException("You are not allowed to restore this task");
         }
 
         task.setDeletedAt(null);

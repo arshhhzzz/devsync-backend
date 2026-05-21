@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -106,7 +107,8 @@ public class WorkspaceService {
             projectRepository.delete(project);
         }
 
-        workspaceRepository.delete(workspace);
+        workspace.setDeletedAt(LocalDateTime.now());
+        workspaceRepository.save(workspace);
 
         auditLogService.log(
                 workspace.getId(),
