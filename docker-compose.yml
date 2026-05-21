@@ -1,23 +1,42 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16
     container_name: devsync-postgres
     restart: always
-
     environment:
-      POSTGRES_DB: devsync
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Natasha
+      POSTGRES_DB: ${DB_NAME:-devsync}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       TZ: Asia/Kolkata
       PGTZ: Asia/Kolkata
-
     ports:
       - "5433:5432"
-
     volumes:
       - devsync_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-devsync}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: devsync-api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-devsync}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-key-must-be-at-least-64-characters-long-for-hs512}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+      DDL_AUTO: ${DDL_AUTO:-update}
+      SHOW_SQL: ${SHOW_SQL:-false}
 
 volumes:
   devsync_postgres_data:
