@@ -1,5 +1,12 @@
 # DevSync Backend
 
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-4-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![Docker](https://img.shields.io/badge/Docker-enabled-blue)
+![JWT](https://img.shields.io/badge/Auth-JWT-red)
+![Tests](https://img.shields.io/badge/Tests-JUnit5%20%7C%20Mockito-brightgreen)
+
 DevSync is a collaborative project management backend built using Spring Boot and PostgreSQL.
 
 It supports:
@@ -97,16 +104,76 @@ Supports:
 
 ---
 
+## Swagger UI Overview
+
+![Swagger Overview](docs/images/swagger-ui.png)
+
+## Actuator Health
+
+![Actuator Health](docs/images/actuator-health.png)
+
+## Docker Containers
+
+![Docker Containers](docs/images/docker-containers.png)
+
 # Architecture
 
-The project follows layered architecture:
+DevSync follows a layered backend architecture with stateless JWT security, workspace-scoped authorization, audit logging, soft deletion, and PostgreSQL persistence.
 
-```text
-controller
-service
-repository
-entity
-dto
-security
-exception
-config
+```mermaid
+flowchart TD
+    Client[Client / Swagger UI / Postman]
+
+    Client --> Controller[Controller Layer]
+
+    Controller --> Security[JWT Authentication Filter]
+    Security --> AuthContext[Spring Security Context]
+
+    Controller --> Service[Service Layer]
+
+    Service --> Auth[Auth Service]
+    Service --> Workspace[Workspace Service]
+    Service --> Project[Project Service]
+    Service --> Task[Task Service]
+    Service --> Audit[Audit Log Service]
+
+    Auth --> Repo[Repository Layer]
+    Workspace --> Repo
+    Project --> Repo
+    Task --> Repo
+    Audit --> Repo
+
+    Repo --> DB[(PostgreSQL)]
+
+    Service --> Validation[Business Rules]
+    Validation --> RBAC[Workspace Role Checks]
+    Validation --> SoftDelete[Cascading Soft Delete + Restore]
+
+    DB --> Testcontainers[Testcontainers PostgreSQL for Integration Tests]
+
+    Docker[Docker Compose] --> App[Spring Boot App Container]
+    Docker --> Pg[PostgreSQL Container]
+    App --> Pg
+```
+
+## Layer Responsibilities
+
+| Layer | Responsibility |
+|---|---|
+| Controller | Exposes REST APIs and handles request/response mapping |
+| Security | Validates JWT tokens and sets authenticated user context |
+| Service | Contains business logic, authorization checks, soft delete, restore, audit events |
+| Repository | Handles database access using Spring Data JPA |
+| Entity | Represents database models and relationships |
+| DTO | Defines request/response payloads |
+| Exception | Provides consistent API error responses |
+
+## Key Architecture Decisions
+
+- Stateless JWT authentication using Spring Security
+- Refresh token rotation for secure session renewal
+- Workspace-scoped RBAC with OWNER, ADMIN, and MEMBER roles
+- Cascading soft delete for workspace, project, and task data
+- Audit logging for important workspace/project/task events
+- Dockerized app + PostgreSQL setup
+- Integration testing with Testcontainers PostgreSQL
