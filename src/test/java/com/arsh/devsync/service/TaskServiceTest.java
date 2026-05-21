@@ -1,6 +1,8 @@
 package com.arsh.devsync.service;
 
 import com.arsh.devsync.dto.CreateTaskRequest;
+import com.arsh.devsync.dto.PagedResponse;
+import com.arsh.devsync.dto.TaskResponse;
 import com.arsh.devsync.dto.UpdateTaskRequest;
 import com.arsh.devsync.entity.*;
 import com.arsh.devsync.exception.ResourceNotFoundException;
@@ -14,8 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -315,6 +320,81 @@ class TaskServiceTest {
         );
 
         verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    void getMyTasksPaginated_shouldReturnAllTasks_whenStatusIsNull() {
+        User user = user(1L, "Arsh", "arsh@test.com");
+
+        Task task = new Task(
+                "Task",
+                "Desc",
+                TaskStatus.TODO,
+                TaskPriority.HIGH,
+                LocalDate.now()
+        );
+
+        when(userRepository.findByEmail("arsh@test.com")).thenReturn(Optional.of(user));
+        when(taskRepository.findByUser(eq(user), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(task)));
+
+        PagedResponse<TaskResponse> response = taskService.getMyTasksPaginated(
+                "arsh@test.com",
+                0,
+                10,
+                null
+        );
+
+        assertEquals(1, response.getContent().size());
+        verify(taskRepository).findByUser(eq(user), any(Pageable.class));
+        verify(taskRepository, never()).findByUserAndStatus(any(), any(), any());
+    }
+
+    @Test
+    void getMyTasksPaginated_shouldReturnFilteredTasks_whenStatusIsPresent() {
+        User user = user(1L, "Arsh", "arsh@test.com");
+
+        Task task = new Task(
+                "Task",
+                "Desc",
+                TaskStatus.TODO,
+                TaskPriority.HIGH,
+                LocalDate.now()
+        );
+
+        when(userRepository.findByEmail("arsh@test.com")).thenReturn(Optional.of(user));
+        when(taskRepository.findByUserAndStatus(eq(user), eq(TaskStatus.TODO), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(task)));
+
+        PagedResponse<TaskResponse> response = taskService.getMyTasksPaginated(
+                "arsh@test.com",
+                0,
+                10,
+                "TODO"
+        );
+
+        assertEquals(1, response.getContent().size());
+        verify(taskRepository).findByUserAndStatus(eq(user), eq(TaskStatus.TODO), any(Pageable.class));
+    }
+
+    @Test
+    void getMyTasksPaginated_shouldThrowException_whenStatusIsInvalid() {
+        User user = user(1L, "Arsh", "arsh@test.com");
+
+        when(userRepository.findByEmail("arsh@test.com")).thenReturn(Optional.of(user));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> taskService.getMyTasksPaginated(
+                        "arsh@test.com",
+                        0,
+                        10,
+                        "INVALID"
+                )
+        );
+
+        verify(taskRepository, never()).findByUser(any(User.class), any(Pageable.class));
+        verify(taskRepository, never()).findByUserAndStatus(any(), any(), any());
     }
 
     @Test

@@ -186,15 +186,20 @@ public class TaskService {
             int size,
             String status
     ) {
-        TaskStatus taskStatus = TaskStatus.valueOf(status.toUpperCase());
-
         User user = getUserByEmail(email);
-
         Pageable pageable = PageRequest.of(page, size);
 
         Page<Task> taskPage;
 
         if (status != null && !status.isBlank()) {
+            TaskStatus taskStatus;
+
+            try {
+                taskStatus = TaskStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid task status: " + status);
+            }
+
             taskPage = taskRepository.findByUserAndStatus(user, taskStatus, pageable);
         } else {
             taskPage = taskRepository.findByUser(user, pageable);

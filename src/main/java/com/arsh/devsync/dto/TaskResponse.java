@@ -27,7 +27,9 @@ public class TaskResponse {
         this.status = task.getStatus();
         this.priority = task.getPriority();
         this.dueDate = task.getDueDate();
-        this.assigneeId = task.getAssignee().getId();
+        if (task.getAssignee() != null) {
+            this.assigneeId = task.getAssignee().getId();
+        }
 
         if (task.getUser() != null) {
             this.userId = task.getUser().getId();
