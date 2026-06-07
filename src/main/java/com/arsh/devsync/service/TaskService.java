@@ -5,6 +5,9 @@ import com.arsh.devsync.dto.PagedResponse;
 import com.arsh.devsync.dto.TaskResponse;
 import com.arsh.devsync.dto.UpdateTaskRequest;
 import com.arsh.devsync.entity.*;
+import com.arsh.devsync.event.DomainEventPublisher;
+import com.arsh.devsync.event.EventType;
+import com.arsh.devsync.event.TaskEventPayload;
 import com.arsh.devsync.exception.ResourceNotFoundException;
 import com.arsh.devsync.exception.UnauthorizedActionException;
 import com.arsh.devsync.repository.ProjectRepository;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -27,19 +31,22 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final WorkspaceMembershipRepository membershipRepository;
     private final AuditLogService auditLogService;
+    private final DomainEventPublisher domainEventPublisher;
 
     public TaskService(
             TaskRepository taskRepository,
             UserRepository userRepository,
             ProjectRepository projectRepository,
             WorkspaceMembershipRepository membershipRepository,
-            AuditLogService auditLogService
+            AuditLogService auditLogService,
+            DomainEventPublisher domainEventPublisher
     ) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.membershipRepository = membershipRepository;
         this.auditLogService = auditLogService;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     public Task createTask(Long projectId, CreateTaskRequest request, String email) {
@@ -68,6 +75,19 @@ public class TaskService {
         task.setAssignee(assignee);
 
         Task savedTask = taskRepository.save(task);
+
+        domainEventPublisher.publishTaskEvent(new TaskEventPayload(
+                EventType.TASK_CREATED,
+                project.getWorkspace().getId(),
+                project.getId(),
+                savedTask.getId(),
+                savedTask.getTitle(),
+                user.getId(),
+                savedTask.getAssignee() != null ? savedTask.getAssignee().getId() : null,
+                null,
+                savedTask.getStatus().name(),
+                Instant.now()
+        ));
 
         auditLogService.log(
                 project.getWorkspace().getId(),

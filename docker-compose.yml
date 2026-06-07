@@ -19,6 +19,24 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: devsync-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-devsync}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-devsync_password}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - devsync_rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build: .
     container_name: devsync-api
@@ -26,17 +44,28 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     ports:
-      - "8080:8080"
+      - "8080:8081"
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-devsync}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
+
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-key-must-be-at-least-64-characters-long-for-hs512}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+
       DDL_AUTO: ${DDL_AUTO:-update}
       SHOW_SQL: ${SHOW_SQL:-false}
 
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-devsync}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-devsync_password}
+      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE:-devsync.events}
+
 volumes:
   devsync_postgres_data:
+  devsync_rabbitmq_data:
