@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import com.arsh.devsync.event.DomainEventPublisher;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,6 +47,9 @@ class TaskServiceTest {
 
     @InjectMocks
     private TaskService taskService;
+
+    @Mock
+    private DomainEventPublisher domainEventPublisher;
 
     @Test
     void createTask_shouldCreateTask_whenUserIsWorkspaceMember() {

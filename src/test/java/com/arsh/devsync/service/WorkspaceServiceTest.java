@@ -19,8 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -270,7 +269,8 @@ class WorkspaceServiceTest {
         workspaceService.deleteWorkspace(10L, "owner@test.com");
 
         verify(projectRepository).findByWorkspace(workspace);
-        verify(workspaceRepository).delete(workspace);
+        verify(workspaceRepository).save(workspace);
+        assertNotNull(workspace.getDeletedAt());
     }
 
     private void setField(Object target, String fieldName, Object value) {
