@@ -4,10 +4,10 @@ import com.arsh.devsync.entity.User;
 
 public class UserResponse {
 
-    private Long id;
-    private String name;
-    private String email;
-    private String role;
+    private final Long id;
+    private final String name;
+    private final String email;
+    private final String role;
 
     public UserResponse(User user) {
         this.id = user.getId();

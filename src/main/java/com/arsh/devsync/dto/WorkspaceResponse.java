@@ -4,9 +4,9 @@ import com.arsh.devsync.entity.Workspace;
 
 public class WorkspaceResponse {
 
-    private Long id;
-    private String name;
-    private String description;
+    private final Long id;
+    private final String name;
+    private final String description;
     private Long ownerId;
     private String ownerEmail;
 
@@ -21,9 +21,23 @@ public class WorkspaceResponse {
         }
     }
 
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public Long getOwnerId() { return ownerId; }
-    public String getOwnerEmail() { return ownerEmail; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
 }

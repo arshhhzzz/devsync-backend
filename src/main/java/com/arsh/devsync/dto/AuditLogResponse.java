@@ -6,13 +6,13 @@ import java.time.LocalDateTime;
 
 public class AuditLogResponse {
 
-    private Long id;
-    private Long workspaceId;
-    private String actorEmail;
-    private String action;
-    private String resourceType;
-    private Long resourceId;
-    private LocalDateTime timestamp;
+    private final Long id;
+    private final Long workspaceId;
+    private final String actorEmail;
+    private final String action;
+    private final String resourceType;
+    private final Long resourceId;
+    private final LocalDateTime timestamp;
 
     public AuditLogResponse(AuditLog auditLog) {
         this.id = auditLog.getId();

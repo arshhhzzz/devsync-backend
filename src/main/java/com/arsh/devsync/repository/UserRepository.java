@@ -1,6 +1,5 @@
 package com.arsh.devsync.repository;
 
-import com.arsh.devsync.dto.UserResponse;
 import com.arsh.devsync.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

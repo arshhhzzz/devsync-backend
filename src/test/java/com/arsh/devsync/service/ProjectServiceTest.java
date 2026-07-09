@@ -15,18 +15,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceTest {
 
-    @Mock private ProjectRepository projectRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private WorkspaceRepository workspaceRepository;
-    @Mock private WorkspaceMembershipRepository membershipRepository;
-    @Mock private AuditLogService auditLogService;
-    @Mock private TaskRepository taskRepository;
+    @Mock
+    private ProjectRepository projectRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private WorkspaceRepository workspaceRepository;
+    @Mock
+    private WorkspaceMembershipRepository membershipRepository;
+    @Mock
+    private AuditLogService auditLogService;
+    @Mock
+    private TaskRepository taskRepository;
 
     @InjectMocks
     private ProjectService projectService;

@@ -4,12 +4,12 @@ import java.util.List;
 
 public class PagedResponse<T> {
 
-    private List<T> content;
-    private int pageNumber;
-    private int pageSize;
-    private long totalElements;
-    private int totalPages;
-    private boolean last;
+    private final List<T> content;
+    private final int pageNumber;
+    private final int pageSize;
+    private final long totalElements;
+    private final int totalPages;
+    private final boolean last;
 
     public PagedResponse(List<T> content, int pageNumber, int pageSize,
                          long totalElements, int totalPages, boolean last) {

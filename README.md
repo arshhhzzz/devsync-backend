@@ -10,6 +10,7 @@
 DevSync is a collaborative project management backend built using Spring Boot and PostgreSQL.
 
 It supports:
+
 - JWT authentication
 - workspace-based collaboration
 - role-based authorization
@@ -41,6 +42,7 @@ It supports:
 # Features
 
 ## Authentication
+
 - User signup/login
 - BCrypt password hashing
 - JWT access tokens
@@ -49,6 +51,7 @@ It supports:
 - Logout support
 
 ## Workspace Management
+
 - Create/update/delete workspaces
 - Workspace membership system
 - Role-based access:
@@ -57,11 +60,13 @@ It supports:
     - MEMBER
 
 ## Project Management
+
 - Projects scoped inside workspaces
 - Pagination and sorting
 - Authorization checks
 
 ## Task Management
+
 - CRUD operations
 - Task assignment
 - Status filtering
@@ -69,22 +74,28 @@ It supports:
 - Assignee validation
 
 ## Audit Logging
+
 Tracks:
+
 - workspace events
 - project events
 - task events
 
 Visible to:
+
 - workspace owner
 - admins
 
 ## Soft Delete Support
+
 Implemented for:
+
 - workspaces
 - projects
 - tasks
 
 Supports:
+
 - cascading soft delete
 - restore endpoints
 - parent-child validation during restore
@@ -92,11 +103,13 @@ Supports:
 ## Testing
 
 ### Unit Tests
+
 - Mockito + JUnit 5
 - Service layer coverage
 - Authorization edge cases
 
 ### Integration Tests
+
 - SpringBootTest
 - Testcontainers PostgreSQL
 - Full auth flow testing
@@ -118,7 +131,8 @@ Supports:
 
 # Architecture
 
-DevSync follows a layered backend architecture with stateless JWT security, workspace-scoped authorization, audit logging, soft deletion, and PostgreSQL persistence.
+DevSync follows a layered backend architecture with stateless JWT security, workspace-scoped authorization, audit
+logging, soft deletion, and PostgreSQL persistence.
 
 ```mermaid
 flowchart TD
@@ -158,15 +172,15 @@ flowchart TD
 
 ## Layer Responsibilities
 
-| Layer | Responsibility |
-|---|---|
-| Controller | Exposes REST APIs and handles request/response mapping |
-| Security | Validates JWT tokens and sets authenticated user context |
-| Service | Contains business logic, authorization checks, soft delete, restore, audit events |
-| Repository | Handles database access using Spring Data JPA |
-| Entity | Represents database models and relationships |
-| DTO | Defines request/response payloads |
-| Exception | Provides consistent API error responses |
+| Layer      | Responsibility                                                                    |
+|------------|-----------------------------------------------------------------------------------|
+| Controller | Exposes REST APIs and handles request/response mapping                            |
+| Security   | Validates JWT tokens and sets authenticated user context                          |
+| Service    | Contains business logic, authorization checks, soft delete, restore, audit events |
+| Repository | Handles database access using Spring Data JPA                                     |
+| Entity     | Represents database models and relationships                                      |
+| DTO        | Defines request/response payloads                                                 |
+| Exception  | Provides consistent API error responses                                           |
 
 ## Key Architecture Decisions
 

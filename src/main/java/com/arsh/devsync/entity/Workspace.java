@@ -26,37 +26,52 @@ public class Workspace {
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    public Workspace() {}
+    public Workspace() {
+    }
 
     public Workspace(String name, String description, User owner) {
         this.name = name;
         this.description = description;
         this.owner = owner;
     }
+
     public Long getId() {
         return id;
     }
+
     public void setId(Long id) {
         this.id = id;
     }
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
+
     public User getOwner() {
         return owner;
     }
+
     public void setOwner(User owner) {
         this.owner = owner;
     }
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 }

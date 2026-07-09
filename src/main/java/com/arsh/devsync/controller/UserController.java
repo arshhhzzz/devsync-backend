@@ -2,7 +2,6 @@ package com.arsh.devsync.controller;
 
 import com.arsh.devsync.dto.CreateUserRequest;
 import com.arsh.devsync.dto.UserResponse;
-import com.arsh.devsync.entity.User;
 import com.arsh.devsync.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;

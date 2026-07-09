@@ -45,7 +45,8 @@ public class Task {
     @JoinColumn(name = "project_id")
     private Project project;
 
-    public Task(){}
+    public Task() {
+    }
 
     public Task(String title, String description, TaskStatus status, TaskPriority priority, LocalDate dueDate) {
         this.title = title;
@@ -54,33 +55,43 @@ public class Task {
         this.priority = priority;
         this.dueDate = dueDate;
     }
+
     public Long getId() {
         return id;
     }
+
     public String getTitle() {
         return title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
+
     public String getDescription() {
         return description;
     }
+
     public void setDescription(String description) {
         this.description = description;
     }
+
     public User getUser() {
         return user;
     }
+
     public void setUser(User user) {
         this.user = user;
     }
+
     public Project getProject() {
         return project;
     }
+
     public void setProject(Project project) {
         this.project = project;
     }
+
     public TaskStatus getStatus() {
         return status;
     }
@@ -108,9 +119,16 @@ public class Task {
     public User getAssignee() {
         return assignee;
     }
+
     public void setAssignee(User assignee) {
         this.assignee = assignee;
     }
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 }

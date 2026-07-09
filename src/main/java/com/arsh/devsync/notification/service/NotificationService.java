@@ -60,18 +60,14 @@ public class NotificationService {
 
     private String buildMessage(TaskEventPayload event) {
         return switch (event.eventType()) {
-            case "TASK_CREATED" ->
-                    "A new task was created: " + event.taskTitle();
+            case "TASK_CREATED" -> "A new task was created: " + event.taskTitle();
 
-            case "TASK_ASSIGNED" ->
-                    "You were assigned to task: " + event.taskTitle();
+            case "TASK_ASSIGNED" -> "You were assigned to task: " + event.taskTitle();
 
-            case "TASK_STATUS_CHANGED" ->
-                    "Task '" + event.taskTitle() + "' changed from " +
-                            event.oldStatus() + " to " + event.newStatus();
+            case "TASK_STATUS_CHANGED" -> "Task '" + event.taskTitle() + "' changed from " +
+                    event.oldStatus() + " to " + event.newStatus();
 
-            default ->
-                    "Task updated: " + event.taskTitle();
+            default -> "Task updated: " + event.taskTitle();
         };
     }
 }

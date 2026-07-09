@@ -24,11 +24,9 @@ public abstract class BaseIntegrationTest {
                     .withDatabaseName("devsync_test")
                     .withUsername("test")
                     .withPassword("test");
-
+    protected final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     protected MockMvc mockMvc;
-
-    protected final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeAll
     static void startContainer() {

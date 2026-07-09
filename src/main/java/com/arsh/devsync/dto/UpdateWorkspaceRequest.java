@@ -9,6 +9,11 @@ public class UpdateWorkspaceRequest {
 
     private String description;
 
-    public String getName() { return name; }
-    public String getDescription() { return description; }
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

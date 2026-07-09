@@ -1,14 +1,13 @@
 package com.arsh.devsync.controller;
 
-import com.arsh.devsync.dto.AuthResponse;
-import com.arsh.devsync.dto.LoginRequest;
-import com.arsh.devsync.dto.LogoutRequest;
-import com.arsh.devsync.dto.RefreshTokenRequest;
-import com.arsh.devsync.dto.SignupRequest;
+import com.arsh.devsync.dto.*;
 import com.arsh.devsync.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")

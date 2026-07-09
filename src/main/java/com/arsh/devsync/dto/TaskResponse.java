@@ -8,16 +8,16 @@ import java.time.LocalDate;
 
 public class TaskResponse {
 
-    private Long id;
-    private String title;
-    private String description;
-    private TaskStatus status;
+    private final Long id;
+    private final String title;
+    private final String description;
+    private final TaskStatus status;
     private Long userId;
     private String userEmail;
     private Long projectId;
     private String projectName;
-    private TaskPriority priority;
-    private LocalDate dueDate;
+    private final TaskPriority priority;
+    private final LocalDate dueDate;
     private Long assigneeId;
 
     public TaskResponse(Task task) {

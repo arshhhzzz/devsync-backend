@@ -23,12 +23,18 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
 
-    @Mock private CommentRepository commentRepository;
-    @Mock private TaskRepository taskRepository;
-    @Mock private ProjectRepository projectRepository;
-    @Mock private UserRepository userRepository;
-    @Mock private WorkspaceMembershipRepository membershipRepository;
-    @Mock private AuditLogService auditLogService;
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
+    private TaskRepository taskRepository;
+    @Mock
+    private ProjectRepository projectRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private WorkspaceMembershipRepository membershipRepository;
+    @Mock
+    private AuditLogService auditLogService;
 
     @InjectMocks
     private CommentService commentService;

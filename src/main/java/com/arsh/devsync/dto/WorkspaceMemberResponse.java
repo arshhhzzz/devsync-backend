@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 public class WorkspaceMemberResponse {
 
-    private Long membershipId;
-    private Long userId;
-    private String name;
-    private String email;
-    private WorkspaceRole role;
-    private LocalDateTime joinedAt;
+    private final Long membershipId;
+    private final Long userId;
+    private final String name;
+    private final String email;
+    private final WorkspaceRole role;
+    private final LocalDateTime joinedAt;
 
     public WorkspaceMemberResponse(WorkspaceMembership membership) {
         this.membershipId = membership.getId();
